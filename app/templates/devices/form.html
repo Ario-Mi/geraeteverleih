@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Gerät bearbeiten' if device else 'Gerät anlegen' }}{% endblock %}
+{% block content %}
+{% from "_macros.html" import csrf_field, form_error, input_field, textarea_field %}
+<h1>{{ 'Gerät bearbeiten' if device else 'Gerät anlegen' }}</h1>
+{{ form_error(errors) }}
+<form method="post" class="form" novalidate>
+  {{ csrf_field() }}
+  {{ input_field('inventory_number', 'Inventarnummer', values, errors, required=true, maxlength=50, help='Muss eindeutig sein, zum Beispiel NB-003.') }}
+  {{ input_field('name', 'Bezeichnung', values, errors, required=true, maxlength=120) }}
+  {{ input_field('category', 'Kategorie', values, errors, required=true, maxlength=80, datalist='category-list') }}
+  <datalist id="category-list">
+    {% for category in categories %}<option value="{{ category }}">{% endfor %}
+  </datalist>
+  {{ textarea_field('description', 'Beschreibung (optional)', values, errors, maxlength=1000) }}
+  <div class="actions">
+    <button type="submit" class="btn">Speichern</button>
+    <a class="btn btn-secondary" href="{{ url_for('devices.detail', device_id=device.id) if device else url_for('devices.index') }}">Abbrechen</a>
+  </div>
+</form>
+{% endblock %}

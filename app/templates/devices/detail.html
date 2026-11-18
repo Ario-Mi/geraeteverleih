@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ device.name }}{% endblock %}
+{% block content %}
+{% from "_macros.html" import csrf_field, device_status, due_info, return_button %}
+<div class="page-head">
+  <h1>{{ device.name }}</h1>
+  <a class="btn btn-secondary" href="{{ url_for('devices.edit', device_id=device.id) }}">Bearbeiten</a>
+</div>
+
+<dl class="details">
+  <dt>Inventarnummer</dt><dd>{{ device.inventory_number }}</dd>
+  <dt>Kategorie</dt><dd>{{ device.category }}</dd>
+  <dt>Beschreibung</dt><dd>{{ device.description or 'Keine Beschreibung hinterlegt.' }}</dd>
+  <dt>Status</dt><dd>{{ device_status(device, active_loan, today) }}
+    {% if active_loan %}<br>an {{ active_loan.person.name }}, Rückgabe geplant: {{ due_info(active_loan, today) }}{% endif %}</dd>
+</dl>
+
+<div class="actions">
+  {% if active_loan %}
+    {{ return_button(active_loan, request.path) }}
+  {% elif not device.is_archived %}
+    <a class="btn" href="{{ url_for('loans.new', device_id=device.id) }}">Ausleihen</a>
+  {% endif %}
+
+  {% if device.is_archived %}
+  <form method="post" action="{{ url_for('devices.restore', device_id=device.id) }}" class="inline-form">
+    {{ csrf_field() }}<button type="submit" class="btn btn-secondary">Wieder aktivieren</button>
+  </form>
+  {% elif not active_loan %}
+  <form method="post" action="{{ url_for('devices.archive', device_id=device.id) }}" class="inline-form">
+    {{ csrf_field() }}<button type="submit" class="btn btn-secondary">Archivieren</button>
+  </form>
+  {% endif %}
+</div>
+{% if active_loan %}<p class="muted">Ein ausgeliehenes Gerät kann erst nach der Rückgabe archiviert werden.</p>{% endif %}
+
+<h2>Ausleihhistorie</h2>
+{% if history %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Person</th><th>Ausgeliehen am</th><th>Rückgabe geplant</th><th>Zurückgegeben am</th></tr></thead>
+    <tbody>
+    {% for loan in history %}
+      <tr{% if loan.is_overdue(today) %} class="row-overdue"{% endif %}>
+        <td><a href="{{ url_for('persons.detail', person_id=loan.person_id) }}">{{ loan.person.name }}</a></td>
+        <td>{{ loan.loan_date|datum }}</td>
+        <td>{{ due_info(loan, today) }}</td>
+        <td>{{ loan.returned_date|datum if loan.returned_date else 'noch nicht zurückgegeben' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="muted">Dieses Gerät wurde noch nie ausgeliehen.</p>
+{% endif %}
+{% endblock %}

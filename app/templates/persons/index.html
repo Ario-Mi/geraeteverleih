@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Personen{% endblock %}
+{% block content %}
+{% from "_macros.html" import due_info %}
+<div class="page-head">
+  <h1>Personen</h1>
+  <a class="btn" href="{{ url_for('persons.new') }}">Person anlegen</a>
+</div>
+
+{% if persons %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Name</th><th>E-Mail</th><th>Aktuell ausgeliehene Geräte</th></tr></thead>
+    <tbody>
+    {% for person in persons %}
+      {% set loans = active_loans.get(person.id, []) %}
+      <tr>
+        <td><a href="{{ url_for('persons.detail', person_id=person.id) }}">{{ person.name }}</a></td>
+        <td>{{ person.email or '–' }}</td>
+        <td>
+          {% if loans %}
+          <ul class="plain-list">
+            {% for loan in loans %}
+            <li{% if loan.is_overdue(today) %} class="overdue-text"{% endif %}>{{ loan.device.name }} ({{ loan.device.inventory_number }}){% if loan.is_overdue(today) %}, überfällig{% endif %}</li>
+            {% endfor %}
+          </ul>
+          {% else %}<span class="muted">keine</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <h2>Noch keine Personen</h2>
+  <p>Legen Sie eine Person an, bevor Sie ein Gerät ausleihen.</p>
+  <a class="btn" href="{{ url_for('persons.new') }}">Erste Person anlegen</a>
+</div>
+{% endif %}
+{% endblock %}

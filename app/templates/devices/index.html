@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Geräte{% endblock %}
+{% block content %}
+{% from "_macros.html" import device_status, due_info %}
+<div class="page-head">
+  <h1>Geräte</h1>
+  <a class="btn" href="{{ url_for('devices.new') }}">Gerät anlegen</a>
+</div>
+
+<form method="get" class="filter-form" role="search">
+  <div class="field">
+    <label for="q">Suche nach Bezeichnung oder Inventarnummer</label>
+    <input id="q" name="q" type="search" value="{{ query }}">
+  </div>
+  <div class="field">
+    <label for="status">Anzeigen</label>
+    <select id="status" name="status">
+      {% for value, label in status_filters.items() %}
+      <option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-secondary">Filtern</button>
+</form>
+
+{% if devices %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Inventarnummer</th><th>Bezeichnung</th><th>Kategorie</th><th>Status</th><th>Ausgeliehen an</th></tr></thead>
+    <tbody>
+    {% for device in devices %}
+      {% set loan = active_loans.get(device.id) %}
+      <tr{% if loan and loan.is_overdue(today) %} class="row-overdue"{% endif %}>
+        <td>{{ device.inventory_number }}</td>
+        <td><a href="{{ url_for('devices.detail', device_id=device.id) }}">{{ device.name }}</a></td>
+        <td>{{ device.category }}</td>
+        <td>{{ device_status(device, loan, today) }}</td>
+        <td>{% if loan %}{{ loan.person.name }}<br><span class="muted">bis {{ due_info(loan, today) }}</span>{% else %}–{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% elif device_total == 0 %}
+<div class="empty-state">
+  <h2>Noch keine Geräte</h2>
+  <p>Legen Sie das erste Gerät an, um es später verleihen zu können.</p>
+  <a class="btn" href="{{ url_for('devices.new') }}">Erstes Gerät anlegen</a>
+</div>
+{% else %}
+<div class="empty-state">
+  <h2>Keine Geräte gefunden</h2>
+  <p>Zu dieser Suche und diesem Filter gibt es keine Treffer.</p>
+  <a class="btn btn-secondary" href="{{ url_for('devices.index') }}">Suche zurücksetzen</a>
+</div>
+{% endif %}
+{% endblock %}

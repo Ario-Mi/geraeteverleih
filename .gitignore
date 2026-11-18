@@ -1,0 +1,37 @@
+# Virtuelle Umgebungen
+.venv/
+venv/
+env/
+
+# Lokale Datenbanken (Flask legt sie im Ordner instance/ ab)
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Python-Temporaerdateien
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor- und Betriebssystemdateien
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Lokale Zugangsdaten und Konfiguration
+.env
+.env.*
+!.env.example
+*.log
+
+# Python-Werkzeuge und Build-Ausgaben
+.ruff_cache/
+.mypy_cache/
+.tox/
+*.egg-info/
+build/
+dist/

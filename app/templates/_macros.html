@@ -1,0 +1,71 @@
+{# Wiederverwendbare Bausteine. Alles, was ein Makro braucht, kommt als Argument. #}
+
+{% macro csrf_field() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}
+
+{% macro form_error(errors) %}
+{% if errors.get('_form') %}<div class="alert alert-error" role="alert">{{ errors.get('_form') }}</div>{% endif %}
+{% endmacro %}
+
+{% macro field_error(errors, name) %}
+{% if errors.get(name) %}<p class="field-error" id="{{ name }}-error"><strong>Fehler:</strong> {{ errors.get(name) }}</p>{% endif %}
+{% endmacro %}
+
+{% macro input_field(name, label, values, errors, type='text', required=false, maxlength=none, help=none, datalist=none) %}
+<div class="field{% if errors.get(name) %} has-error{% endif %}">
+  <label for="{{ name }}">{{ label }}{% if required %} <span class="required">(Pflichtfeld)</span>{% endif %}</label>
+  {% if help %}<p class="help">{{ help }}</p>{% endif %}
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}"
+    {% if required %}required{% endif %}
+    {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+    {% if datalist %}list="{{ datalist }}"{% endif %}
+    {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>
+  {{ field_error(errors, name) }}
+</div>
+{% endmacro %}
+
+{% macro textarea_field(name, label, values, errors, maxlength=none) %}
+<div class="field{% if errors.get(name) %} has-error{% endif %}">
+  <label for="{{ name }}">{{ label }}</label>
+  <textarea id="{{ name }}" name="{{ name }}" rows="4"
+    {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+    {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>{{ values.get(name, '') }}</textarea>
+  {{ field_error(errors, name) }}
+</div>
+{% endmacro %}
+
+{% macro select_field(name, label, options, selected, errors, placeholder) %}
+<div class="field{% if errors.get(name) %} has-error{% endif %}">
+  <label for="{{ name }}">{{ label }} <span class="required">(Pflichtfeld)</span></label>
+  <select id="{{ name }}" name="{{ name }}" required
+    {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>
+    <option value="">{{ placeholder }}</option>
+    {% for value, text in options %}
+    <option value="{{ value }}"{% if value|string == selected|string %} selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  {{ field_error(errors, name) }}
+</div>
+{% endmacro %}
+
+{% macro device_status(device, loan, today) %}
+{% if device.is_archived %}<span class="badge badge-archived">Archiviert</span>
+{% elif loan and loan.is_overdue(today) %}<span class="badge badge-overdue">Ausgeliehen, überfällig</span>
+{% elif loan %}<span class="badge badge-loaned">Ausgeliehen</span>
+{% else %}<span class="badge badge-available">Verfügbar</span>{% endif %}
+{% endmacro %}
+
+{% macro due_info(loan, today) %}
+{% if loan.is_overdue(today) %}{% set days = loan.days_overdue(today) %}
+<span class="overdue-text">{{ loan.due_date|datum }}<br>überfällig seit {{ days }} {{ 'Tag' if days == 1 else 'Tagen' }}</span>
+{% else %}{{ loan.due_date|datum }}{% endif %}
+{% endmacro %}
+
+{% macro return_button(loan, next_url) %}
+<form method="post" action="{{ url_for('loans.return_loan', loan_id=loan.id) }}" class="inline-form">
+  {{ csrf_field() }}
+  <input type="hidden" name="next" value="{{ next_url }}">
+  <button type="submit" class="btn btn-small">Rückgabe erfassen</button>
+</form>
+{% endmacro %}

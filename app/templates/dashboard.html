@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Übersicht{% endblock %}
+{% block content %}
+{% from "_macros.html" import return_button, due_info %}
+<div class="page-head dashboard-head">
+  <div>
+    <p class="eyebrow">Geräteverwaltung</p>
+    <h1>Übersicht</h1>
+    <p class="page-intro">Geräte, Ausleihen und Rückgaben im Blick.</p>
+  </div>
+  {% if device_total %}<a class="btn" href="{{ url_for('loans.new') }}">Gerät ausleihen <span aria-hidden="true">&#8599;</span></a>{% endif %}
+</div>
+
+{% if device_total == 0 %}
+<div class="empty-state">
+  <h2>Willkommen im Geräteverleih</h2>
+  <p>Es sind noch keine Geräte erfasst. Legen Sie als Nächstes das erste Gerät an.</p>
+  <a class="btn" href="{{ url_for('devices.new') }}">Erstes Gerät anlegen</a>
+</div>
+{% else %}
+<section class="stats" aria-label="Kennzahlen">
+  <a class="stat" href="{{ url_for('devices.index', status='verfuegbar') }}">
+    <span class="stat-number">{{ available_count }}</span>
+    <span class="stat-label">Verfügbare Geräte</span>
+  </a>
+  <a class="stat" href="{{ url_for('loans.index', status='aktiv') }}">
+    <span class="stat-number">{{ active_count }}</span>
+    <span class="stat-label">Aktive Ausleihen</span>
+  </a>
+  <a class="stat{% if overdue_count %} stat-overdue{% endif %}" href="{{ url_for('loans.index', status='ueberfaellig') }}">
+    <span class="stat-number">{{ overdue_count }}</span>
+    <span class="stat-label">Überfällige Ausleihen</span>
+  </a>
+</section>
+
+
+
+<h2>Überfällige Ausleihen</h2>
+{% if overdue_loans %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Gerät</th><th>Person</th><th>Rückgabe geplant</th><th><span class="visually-hidden">Aktion</span></th></tr></thead>
+    <tbody>
+    {% for loan in overdue_loans %}
+      <tr class="row-overdue">
+        <td><a href="{{ url_for('devices.detail', device_id=loan.device_id) }}">{{ loan.device.name }}</a><br><span class="muted">{{ loan.device.inventory_number }}</span></td>
+        <td><a href="{{ url_for('persons.detail', person_id=loan.person_id) }}">{{ loan.person.name }}</a></td>
+        <td>{{ due_info(loan, today) }}</td>
+        <td>{{ return_button(loan, request.full_path.rstrip('?')) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="muted">Keine überfälligen Ausleihen. Alles im Plan.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

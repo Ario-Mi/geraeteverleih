@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Person bearbeiten' if person else 'Person anlegen' }}{% endblock %}
+{% block content %}
+{% from "_macros.html" import csrf_field, form_error, input_field %}
+<h1>{{ 'Person bearbeiten' if person else 'Person anlegen' }}</h1>
+{{ form_error(errors) }}
+<form method="post" class="form" novalidate>
+  {{ csrf_field() }}
+  {{ input_field('name', 'Name', values, errors, required=true, maxlength=120) }}
+  {{ input_field('email', 'E-Mail-Adresse (optional)', values, errors, type='email', maxlength=254) }}
+  <div class="actions">
+    <button type="submit" class="btn">Speichern</button>
+    <a class="btn btn-secondary" href="{{ url_for('persons.detail', person_id=person.id) if person else url_for('persons.index') }}">Abbrechen</a>
+  </div>
+</form>
+{% endblock %}

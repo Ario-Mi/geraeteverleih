@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Gerät ausleihen{% endblock %}
+{% block content %}
+{% from "_macros.html" import csrf_field, form_error, input_field, select_field %}
+<h1>Gerät ausleihen</h1>
+
+{% if not device_options %}
+{% for message in errors.values() %}<div class="alert alert-error" role="alert">{{ message }}</div>{% endfor %}
+<div class="empty-state">
+  <h2>Kein Gerät verfügbar</h2>
+  <p>Aktuell ist kein Gerät frei. Legen Sie ein neues Gerät an oder erfassen Sie zuerst eine Rückgabe.</p>
+  <a class="btn" href="{{ url_for('devices.new') }}">Gerät anlegen</a>
+  <a class="btn btn-secondary" href="{{ url_for('loans.index') }}">Aktive Ausleihen ansehen</a>
+</div>
+{% elif not person_options %}
+<div class="empty-state">
+  <h2>Noch keine Personen</h2>
+  <p>Legen Sie zuerst die Person an, die das Gerät ausleihen soll.</p>
+  <a class="btn" href="{{ url_for('persons.new') }}">Person anlegen</a>
+</div>
+{% else %}
+{{ form_error(errors) }}
+<form method="post" class="form" novalidate>
+  {{ csrf_field() }}
+  {{ select_field('device_id', 'Gerät', device_options, values.get('device_id', ''), errors, 'Bitte Gerät wählen') }}
+  {{ select_field('person_id', 'Person', person_options, values.get('person_id', ''), errors, 'Bitte Person wählen') }}
+  {{ input_field('loan_date', 'Ausleihdatum', values, errors, type='date', required=true) }}
+  {{ input_field('due_date', 'Geplantes Rückgabedatum', values, errors, type='date', required=true, help='Darf nicht vor dem Ausleihdatum liegen.') }}
+  <div class="actions">
+    <button type="submit" class="btn">Ausleihe speichern</button>
+    <a class="btn btn-secondary" href="{{ url_for('loans.index') }}">Abbrechen</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

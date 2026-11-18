@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} – Geräteverleih</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="{{ url_for('main.dashboard') }}">Geräteverleih</a>
+      <nav aria-label="Hauptnavigation">
+        <ul>
+          {% set nav = [('main.dashboard', 'Übersicht', 'main'), ('devices.index', 'Geräte', 'devices'), ('persons.index', 'Personen', 'persons'), ('loans.index', 'Ausleihen', 'loans')] %}
+          {% for endpoint, label, section in nav %}
+          <li><a href="{{ url_for(endpoint) }}"{% if request.blueprint == section %} aria-current="page"{% endif %}>{{ label }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inhalt" class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">Lokale Einzelbenutzeranwendung · Portfolio-Projekt</div>
+  </footer>
+</body>
+</html>

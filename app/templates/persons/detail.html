@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ person.name }}{% endblock %}
+{% block content %}
+{% from "_macros.html" import due_info, return_button %}
+<div class="page-head">
+  <h1>{{ person.name }}</h1>
+  <a class="btn btn-secondary" href="{{ url_for('persons.edit', person_id=person.id) }}">Bearbeiten</a>
+</div>
+<p>E-Mail: {{ person.email or 'nicht hinterlegt' }}</p>
+
+<h2>Aktuell ausgeliehene Geräte</h2>
+{% if current_loans %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Gerät</th><th>Ausgeliehen am</th><th>Rückgabe geplant</th><th><span class="visually-hidden">Aktion</span></th></tr></thead>
+    <tbody>
+    {% for loan in current_loans %}
+      <tr{% if loan.is_overdue(today) %} class="row-overdue"{% endif %}>
+        <td><a href="{{ url_for('devices.detail', device_id=loan.device_id) }}">{{ loan.device.name }}</a><br><span class="muted">{{ loan.device.inventory_number }}</span></td>
+        <td>{{ loan.loan_date|datum }}</td>
+        <td>{{ due_info(loan, today) }}</td>
+        <td>{{ return_button(loan, request.path) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="muted">Diese Person hat aktuell keine Geräte ausgeliehen.</p>
+<p><a class="btn btn-secondary" href="{{ url_for('loans.new', person_id=person.id) }}">Gerät ausleihen</a></p>
+{% endif %}
+
+<h2>Frühere Ausleihen</h2>
+{% if past_loans %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Gerät</th><th>Ausgeliehen am</th><th>Zurückgegeben am</th></tr></thead>
+    <tbody>
+    {% for loan in past_loans %}
+      <tr><td><a href="{{ url_for('devices.detail', device_id=loan.device_id) }}">{{ loan.device.name }}</a></td><td>{{ loan.loan_date|datum }}</td><td>{{ loan.returned_date|datum }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="muted">Noch keine abgeschlossenen Ausleihen.</p>
+{% endif %}
+{% endblock %}

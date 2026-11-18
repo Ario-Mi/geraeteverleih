@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Ausleihen{% endblock %}
+{% block content %}
+{% from "_macros.html" import due_info, return_button %}
+<div class="page-head">
+  <h1>Ausleihen</h1>
+  <a class="btn" href="{{ url_for('loans.new') }}">Gerät ausleihen</a>
+</div>
+
+<nav class="tabs" aria-label="Ausleihen filtern">
+  {% for value, label in status_filters.items() %}
+  <a href="{{ url_for('loans.index', status=value) }}"{% if value == status %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+
+{% if loans %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Gerät</th><th>Person</th><th>Ausgeliehen am</th><th>Rückgabe geplant</th><th>Zurückgegeben am</th><th><span class="visually-hidden">Aktion</span></th></tr></thead>
+    <tbody>
+    {% for loan in loans %}
+      <tr{% if loan.is_overdue(today) %} class="row-overdue"{% endif %}>
+        <td><a href="{{ url_for('devices.detail', device_id=loan.device_id) }}">{{ loan.device.name }}</a><br><span class="muted">{{ loan.device.inventory_number }}</span></td>
+        <td><a href="{{ url_for('persons.detail', person_id=loan.person_id) }}">{{ loan.person.name }}</a></td>
+        <td>{{ loan.loan_date|datum }}</td>
+        <td>{{ due_info(loan, today) }}</td>
+        <td>{{ loan.returned_date|datum if loan.returned_date else '–' }}</td>
+        <td>{% if loan.is_active %}{{ return_button(loan, request.full_path.rstrip('?')) }}{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  {% if status == 'ueberfaellig' %}
+  <h2>Keine überfälligen Ausleihen</h2><p>Alle Geräte sind im Plan.</p>
+  {% elif status == 'zurueckgegeben' %}
+  <h2>Noch keine Rückgaben</h2><p>Zurückgegebene Ausleihen erscheinen hier.</p>
+  {% else %}
+  <h2>Keine Ausleihen vorhanden</h2><p>Sobald Sie ein Gerät ausleihen, erscheint es hier.</p>
+  <a class="btn" href="{{ url_for('loans.new') }}">Gerät ausleihen</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
