@@ -4,6 +4,8 @@ Kleine Webanwendung, mit der eine Organisation nachvollziehen kann, welche Gerä
 
 Das Projekt entstand als Portfolio-Projekt während meiner Umschulung zum Fachinformatiker für Anwendungsentwicklung. Der Schwerpunkt liegt auf sauberen Geschäftsregeln, Datenbanksicherung und Tests, nicht auf einem großen Funktionsumfang.
 
+**Live-Demo:** https://ario-mi.github.io/geraeteverleih/ (statisch, mit erfundenen Beispieldaten)
+
 ## Technik
 
 Python 3.11+, Flask, SQLAlchemy, SQLite, Jinja2 und pytest. Die Oberfläche ist responsiv und verwendet lokal ausgeliefertes CSS ohne Frontend-Build.
@@ -69,6 +71,7 @@ app/
   seed.py, cli.py  Beispieldaten und die Befehle init-db und seed-demo
   views/           Flask-Routen (Blueprints für Übersicht, Geräte, Personen, Ausleihen)
   templates/       Jinja2-Templates, static/style.css
+scripts/build_demo.py  Statische Demo für GitHub Pages erzeugen
 tests/             pytest-Tests mit isolierter Testdatenbank
 ```
 
@@ -122,6 +125,18 @@ Die Tests decken unter anderem Geräte und Personen, Ausleihen, Rückgaben, Datu
 4. Eine zweite aktive Ausleihe desselben Geräts versuchen: Sie wird abgelehnt.
 5. Die Rückgabe erfassen: Das Gerät ist wieder verfügbar.
 6. Das Gerät archivieren: Es kann danach nicht ausgeliehen werden.
+
+## Statische Demo auf GitHub Pages
+
+GitHub Pages kann kein Python ausführen. Deshalb erzeugt `scripts/build_demo.py` die Demo: Das Skript startet die Anwendung mit einer temporären SQLite-Datenbank und den Beispieldaten aus `seed-demo`, ruft alle erreichbaren Seiten über den Flask-Testclient ab und speichert sie als HTML-Dateien. Interne Links werden dabei auf die erzeugten Dateien umgeschrieben.
+
+In der Demo sind Formulare deaktiviert, es wird nichts gespeichert. Der Statusfilter der Geräteliste funktioniert, die Textsuche nur in der Vollversion. GitHub Actions (`.github/workflows/pages.yml`) führt zuerst die Tests aus und veröffentlicht die Demo dann bei jedem Push auf `main` sowie einmal pro Woche neu, damit Fristen und überfällige Ausleihen zum aktuellen Datum passen.
+
+Lokal erzeugen (Ausgabe im Ordner `demo/`):
+
+```powershell
+python scripts/build_demo.py
+```
 
 ## Lokale Dateien
 
