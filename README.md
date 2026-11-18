@@ -6,6 +6,12 @@ Das Projekt entstand als Portfolio-Projekt während meiner Umschulung zum Fachin
 
 **Live-Demo:** https://ario-mi.github.io/geraeteverleih/ (statisch, mit erfundenen Beispieldaten)
 
+## Vorschau
+
+![Übersicht mit Kennzahlen und überfälligen Ausleihen](docs/screenshots/uebersicht.png)
+
+![Geräteliste mit Suche, Statusfilter und Ausleihstatus](docs/screenshots/geraete.png)
+
 ## Technik
 
 Python 3.11+, Flask, SQLAlchemy, SQLite, Jinja2 und pytest. Die Oberfläche ist responsiv und verwendet lokal ausgeliefertes CSS ohne Frontend-Build.
